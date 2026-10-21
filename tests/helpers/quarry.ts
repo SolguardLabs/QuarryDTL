@@ -51,7 +51,7 @@ export type SettlementReport = {
 };
 
 export type QuarryReport = {
-  lab: string;
+  protocol: string;
   scenario: string;
   network_id: string;
   clock: number;
@@ -66,6 +66,18 @@ export type QuarryReport = {
   views: Array<Record<string, any>>;
   rebalances: Array<Record<string, any>>;
   liquidations: Array<Record<string, any>>;
+  exposure: Array<{
+    route_id: string;
+    asset: string;
+    demand: number;
+    allocated: number;
+    outstanding: number;
+    submitted: number;
+    finalized: number;
+    failed: number;
+    fees_finalized: number;
+    utilization_bps: number;
+  }>;
   totals: {
     reserves: AmountBucket[];
     liabilities: AmountBucket[];
@@ -148,7 +160,7 @@ export function assertDigest(value: unknown): void {
 }
 
 export function assertCommon(report: QuarryReport, scenario: string): void {
-  assert.equal(report.lab, "QuarryDTL");
+  assert.equal(report.protocol, "QuarryDTL");
   assert.equal(report.scenario, scenario);
   assert.equal(report.network_id, "quarry-local-liquidity");
   assertDigest(report.state_digest);

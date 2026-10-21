@@ -1,70 +1,43 @@
-# Security Policy
+# Política de seguridad
 
-## Modelo De Seguridad
+## Límites de confianza
 
-QuarryDTL modela un motor interno de liquidez donde los vaults exponen
-capacidad mediante rutas autorizadas. El sistema separa reservas observadas,
-reservas comprometidas, settlements en vuelo, inflows pendientes y previsiones
-operativas usadas por el planificador.
+QuarryDTL separa configuración de activos y rutas, ejecución de órdenes operativas, mutaciones del ledger y reporting. La CLI ejecuta escenarios deterministas; no incluye una pasarela de depósitos, llaves de firma ni conexión a una red pública. No debe interpretarse la salida como prueba de custodia o finalización fuera de este motor.
 
-El motor asume:
-
-- activos registrados con precision y parametros de riesgo conocidos;
-- vaults creados por configuracion interna;
-- rutas habilitadas entre vaults compatibles;
-- cantidades enteras sin coma flotante;
-- lifecycle explicito para reservas, settlements y forecasts;
-- salida JSON determinista para auditoria y reproduccion.
-
-## Invariantes Esperadas
-
-- Ningun vault puede tener componentes negativos.
-- Ninguna cuenta interna puede tener balances negativos.
-- Cada settlement debe referenciar ruta y vaults existentes.
-- Cada forecast originado por settlement debe enlazar a un settlement valido.
-- Las rutas no pueden liquidar mas de lo asignado.
-- Las vistas de capacidad no pueden exponer capacidad negativa.
-- Los retiros permanecen abiertos mientras los outflows pendientes esten
-  cubiertos por la vista contable del vault.
-
-## Validacion Automatizada
-
-La suite TypeScript valida los escenarios publicos mediante la CLI:
-
-```bash
-npm test
+```mermaid
+flowchart TD
+    O[Operador / CLI] --> P[Política y rutas]
+    P --> V[Vista de vault]
+    V --> A[Asignación]
+    A --> S[Settlement]
+    S --> J[Diario de eventos]
+    S --> R[Reporte de riesgo]
+    J --> R
+    R --> C[Revisión operacional]
 ```
 
-La validacion completa de CI usa:
+## Controles verificables
+
+- Las rutas enlazan vaults del mismo activo y aplican lote mínimo, demanda y cuota.
+- Los importes son enteros; los porcentajes se expresan en puntos básicos (`10 000 = 100 %`).
+- El ledger registra reservas, entradas y salidas pendientes, estado de settlement y eventos asociados.
+- Las previsiones enlazan con el settlement que las originó y están sujetas a umbral de confianza.
+- El reporte valida referencias, no negatividad y límites de demanda; `validate` falla si sus invariantes no se cumplen.
+- La exposición por ruta desglosa importe enviado, finalizado y fallido sin mezclar fees no realizados.
+
+Estos controles son condiciones comprobables, no una certificación de ausencia de riesgos. Las verificaciones locales no sustituyen revisión independiente, conciliación externa ni pruebas de integración con un custodio real.
+
+## Revisión y notificación
+
+Para comunicar un problema de seguridad, utilice el canal privado de avisos de seguridad del repositorio en GitHub. Incluya commit, secuencia de comandos, salida JSON, activo y ruta afectados, estado esperado/observado e impacto económico estimado. No publique datos sensibles ni reproducciones contra sistemas ajenos.
+
+## Comprobación local
 
 ```bash
-npm run ci
+go vet ./...
+go test ./...
+bash scripts/ci.sh
+out/quarrydtl validate operator-cycle
 ```
 
-## Dependencias
-
-El core Go solo usa la libreria estandar. Node.js se usa para scripts de build
-y tests de integracion. Dependabot esta configurado para Go modules, npm y
-GitHub Actions.
-
-## Alcance De Revision
-
-El alcance principal es:
-
-- `src/ledger.go`
-- `src/planner.go`
-- `src/allocator.go`
-- `src/rebalance.go`
-- `src/liquidation.go`
-- `src/risk.go`
-- `tests/node/*.test.ts`
-
-## Reportes
-
-Los reportes internos deben incluir:
-
-- escenario afectado;
-- salida JSON emitida por la CLI;
-- secuencia de rutas, reservas, forecasts y settlements;
-- impacto contable o economico;
-- propuesta de test de regresion.
+El [modelo económico](docs/modelo-economico.md) define las magnitudes; [operación](docs/operacion.md) describe el ciclo de revisión y recuperación.
