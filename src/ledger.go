@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 type Ledger struct {
-	Lab          string
+	Protocol     string
 	NetworkID    string
 	Clock        int64
 	Assets       *AssetRegistry
@@ -22,7 +22,7 @@ type Ledger struct {
 func NewLedger() *Ledger {
 	policy := DefaultPolicy()
 	return &Ledger{
-		Lab:          "QuarryDTL",
+		Protocol:     "QuarryDTL",
 		NetworkID:    "quarry-local-liquidity",
 		Clock:        1_700_000_000,
 		Assets:       NewAssetRegistry(),

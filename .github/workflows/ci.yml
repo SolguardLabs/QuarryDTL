@@ -16,6 +16,6 @@ jobs:
         with:
           node-version: "24"
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Run CI
         run: bash scripts/ci.sh

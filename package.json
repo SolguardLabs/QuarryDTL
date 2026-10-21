@@ -1,9 +1,9 @@
 {
   "name": "quarrydtl",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Go DTL liquidity extraction engine with TypeScript integration tests.",
+  "description": "Motor de asignación, rebalanceo y liquidación de liquidez entre vaults.",
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "node scripts/build.mjs && node --test --experimental-strip-types \"tests/node/*.test.ts\"",

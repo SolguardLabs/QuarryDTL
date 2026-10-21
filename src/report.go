@@ -9,7 +9,7 @@ type TotalsReport struct {
 }
 
 type Report struct {
-	Lab          string               `json:"lab"`
+	Protocol     string               `json:"protocol"`
 	Scenario     string               `json:"scenario"`
 	NetworkID    string               `json:"network_id"`
 	Clock        int64                `json:"clock"`
@@ -24,6 +24,7 @@ type Report struct {
 	Views        []LiquidityView      `json:"views"`
 	Rebalances   []RebalanceResult    `json:"rebalances"`
 	Liquidations []LiquidationReceipt `json:"liquidations"`
+	Exposure     []RouteExposure      `json:"exposure"`
 	Totals       TotalsReport         `json:"totals"`
 	Risk         RiskMetrics          `json:"risk"`
 	Invariants   InvariantReport      `json:"invariants"`
@@ -37,7 +38,7 @@ func BuildReport(run *ScenarioRun) Report {
 	notes := append([]string{}, ledger.Notes...)
 	notes = append(notes, run.ScenarioNotes...)
 	return Report{
-		Lab:          ledger.Lab,
+		Protocol:     ledger.Protocol,
 		Scenario:     run.Name,
 		NetworkID:    ledger.NetworkID,
 		Clock:        ledger.Clock,
@@ -52,6 +53,7 @@ func BuildReport(run *ScenarioRun) Report {
 		Views:        run.Views,
 		Rebalances:   run.Rebalances,
 		Liquidations: run.Liquidations,
+		Exposure:     BuildRouteExposures(ledger),
 		Totals:       buildTotals(ledger),
 		Risk:         risk.Metrics(),
 		Invariants:   risk.Invariants(),
